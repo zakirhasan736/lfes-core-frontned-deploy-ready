@@ -2,7 +2,16 @@
 'use client';
 import React, { useState } from 'react';
 import { apiService } from '@/services/apiService';
-import {  Mail, User as UserIcon, Lock, ArrowRight } from 'lucide-react';
+import { TerminalError } from '@/services/errors';
+import {
+  Mail,
+  User as UserIcon,
+  Lock,
+  ArrowRight,
+  AlertCircle,
+  Eye,
+  EyeOff,
+} from 'lucide-react';
 import Image from 'next/image';
 import { User } from '@/types/index';
 
@@ -13,24 +22,33 @@ export interface SignupProps {
 
 const Signup: React.FC<SignupProps> = ({  onToggleLogin }) => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.password) {
+      setError('All matrix parameters are required for initialization.');
+      return;
+    }
 
-  try {
-    await apiService.signup(formData.name, formData.email, formData.password);
+    setIsLoading(true);
+    setError(null);
 
-    // ✅ Signup successful → go to login
-    onToggleLogin();
-  } catch (error) {
-    console.error('Signup failed:', error);
-    alert('Signup failed. Please try again.');
-  } finally {
-    setIsLoading(false);
-  }
-};
+    try {
+      await apiService.signup(formData.name, formData.email, formData.password);
+      // ✅ Signup successful → go to login
+      onToggleLogin();
+    } catch (err: unknown) {
+      console.error(err);
+      setError(
+        err instanceof TerminalError ? err.message : 'Node registration failed.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
 
   return (
@@ -57,6 +75,14 @@ const handleSubmit = async (e: React.FormEvent) => {
           <p className="text-[#475569] text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] mb-8 sm:mb-12">
             New Node Registration • Secure Hub
           </p>
+          {error && (
+            <div className="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 animate-fade-in text-left">
+              <AlertCircle size={18} className="text-red-500 shrink-0" />
+              <p className="text-[10px] font-black text-red-500 uppercase tracking-widest leading-relaxed">
+                {error}
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
             <div className="space-y-2">
@@ -113,15 +139,22 @@ const handleSubmit = async (e: React.FormEvent) => {
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-[#334155]"
                 />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className="w-full bg-[#060b13] border border-[#1e293b] rounded-2xl p-4 pl-12 text-sm font-bold focus:outline-none focus:border-[#d4af37]/50 transition-all text-white placeholder:text-[#334155]"
+                  className="w-full bg-[#060b13] border border-[#1e293b] rounded-2xl p-4 pl-12 pr-12 text-sm font-bold focus:outline-none focus:border-[#d4af37]/50 transition-all text-white placeholder:text-[#334155]"
                   value={formData.password}
                   onChange={e =>
                     setFormData({ ...formData, password: e.target.value })
                   }
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#334155] hover:text-[#d4af37] transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 

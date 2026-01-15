@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { User } from '@/types/index';
 import { apiService } from '@/services/apiService';
-import {  ArrowRight } from 'lucide-react';
+import {  ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
-
+import { TerminalError } from '@/services/errors';
 interface LoginProps {
   onLogin: (user: User) => void;
   onToggleSignup: () => void;
@@ -18,16 +18,30 @@ const Login: React.FC<LoginProps> = ({
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      setError('Identification parameters missing.');
+      return;
+    }
+
     setIsLoading(true);
+    setError(null);
+
     try {
       const user = await apiService.login(email, password);
       onLogin(user);
-    } catch (error) {
-      console.error('Login failed:', error);
+    } catch (err: unknown) {
+      console.error(err);
+      setError(
+        err instanceof TerminalError
+          ? err.message
+          : 'Authentication node timeout.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -57,7 +71,14 @@ const Login: React.FC<LoginProps> = ({
           <p className="text-[#475569] text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] mb-8 sm:mb-12">
             Lion Family Eco System • Secure Hub
           </p>
-
+          {error && (
+            <div className="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 animate-fade-in text-left">
+              <AlertCircle size={18} className="text-red-500 shrink-0" />
+              <p className="text-[10px] font-black text-red-500 uppercase tracking-widest leading-relaxed">
+                {error}
+              </p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
             <div className="space-y-2">
               <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-[0.2em] ml-2">
@@ -77,14 +98,23 @@ const Login: React.FC<LoginProps> = ({
               <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-[0.2em] ml-2">
                 Access Key
               </label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                className="w-full bg-[#060b13] border border-[#1e293b] rounded-2xl p-4 text-sm font-bold focus:outline-none focus:border-[#d4af37]/50 transition-all text-white placeholder:text-[#334155]"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  className="w-full bg-[#060b13] border border-[#1e293b] rounded-2xl p-4 pr-12 text-sm font-bold focus:outline-none focus:border-[#d4af37]/50 transition-all text-white placeholder:text-[#334155]"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#334155] hover:text-[#d4af37] transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-col xs:flex-row xs:items-center justify-between py-2 gap-4">

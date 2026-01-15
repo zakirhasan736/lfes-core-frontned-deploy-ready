@@ -1,6 +1,6 @@
 import { User, Trade, } from '@/types/index';
 import { OpenOrder } from '@/components/home/HomeClient';
-
+import { TerminalError } from './errors';
 /**
  * LFES TERMINAL - INTEGRATED API SERVICE
  * 
@@ -8,12 +8,12 @@ import { OpenOrder } from '@/components/home/HomeClient';
  * Handling both immediate trades and persistent orders.
  */
 
-export class TerminalError extends Error {
-  constructor(public message: string, public code: string = 'SYNC_ERROR') {
-    super(message);
-    this.name = 'TerminalError';
-  }
-}
+// export class TerminalError extends Error {
+//   constructor(public message: string, public code: string = 'SYNC_ERROR') {
+//     super(message);
+//     this.name = 'TerminalError';
+//   }
+// }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -30,12 +30,24 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
       ...options,
     });
 
+
     if (!res.ok) {
-      const error = await res.json().catch(() => ({}));
-      throw new TerminalError(error.detail || 'Protocol communication failure.', 'API_ERROR');
+      let message = 'Protocol communication failure.';
+      const code = `HTTP_${res.status}`;
+
+      try {
+        const data = await res.json();
+        if (typeof data?.detail === 'string') {
+          message = data.detail;
+        }
+      } catch {
+        // non-JSON response (HTML / proxy / crash)
+      }
+
+      throw new TerminalError(message, code);
     }
 
-    return res.json();
+    return (await res.json()) as T;
   } catch (err: unknown) {
     if (err instanceof TerminalError) throw err;
     throw new TerminalError('Network node unreachable. Check terminal uplink.', 'NETWORK_ERROR');

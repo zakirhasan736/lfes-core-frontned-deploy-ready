@@ -19,7 +19,8 @@ import {
   Info,
   Loader2,
 } from 'lucide-react';
-import { apiService, TerminalError } from '@/services/apiService';
+import { apiService } from '@/services/apiService';
+import { TerminalError } from '@/services/errors';
 import { useTerminalSocket } from '@/services/useTerminalSocket'; 
 
 export interface OpenOrder extends Trade {

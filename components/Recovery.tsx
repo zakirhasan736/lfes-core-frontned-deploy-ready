@@ -9,6 +9,9 @@ import {
   ShieldCheck,
   Lock,
   ArrowRight,
+  Eye,
+  EyeOff,
+  AlertCircle,
 } from 'lucide-react';
 
 interface RecoveryProps {
@@ -23,6 +26,8 @@ const Recovery: React.FC<RecoveryProps> = ({ onToggleLogin }) => {
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPass1, setShowPass1] = useState(false);
+  const [showPass2, setShowPass2] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -222,27 +227,45 @@ const Recovery: React.FC<RecoveryProps> = ({ onToggleLogin }) => {
                   <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-[0.2em] ml-2">
                     New Access Key
                   </label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    className="w-full bg-[#060b13] border border-[#1e293b] rounded-2xl p-4 text-sm font-bold focus:outline-none focus:border-[#d4af37]/50 transition-all text-white placeholder:text-[#334155]"
-                    value={newPassword}
-                    onChange={e => setNewPassword(e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPass1 ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      className="w-full bg-[#060b13] border border-[#1e293b] rounded-2xl p-4 pr-12 text-sm font-bold focus:outline-none focus:border-[#d4af37]/50 transition-all text-white placeholder:text-[#334155]"
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass1(!showPass1)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#334155] hover:text-[#d4af37]"
+                    >
+                      {showPass1 ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-[0.2em] ml-2">
                     Confirm Cipher
                   </label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    className="w-full bg-[#060b13] border border-[#1e293b] rounded-2xl p-4 text-sm font-bold focus:outline-none focus:border-[#d4af37]/50 transition-all text-white placeholder:text-[#334155]"
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPass2 ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      className="w-full bg-[#060b13] border border-[#1e293b] rounded-2xl p-4 pr-12 text-sm font-bold focus:outline-none focus:border-[#d4af37]/50 transition-all text-white placeholder:text-[#334155]"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass2(!showPass2)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#334155] hover:text-[#d4af37]"
+                    >
+                      {showPass2 ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
                 {error && (
                   <p className="text-red-500 text-[10px] font-black uppercase tracking-widest px-2">
