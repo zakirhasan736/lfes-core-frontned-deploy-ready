@@ -508,7 +508,7 @@ useTerminalSocket<TerminalSocketEvent>(
         </header>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="p-4 sm:p-8 max-w-550 mx-auto w-full">
+          <div className="px-4 pt-4 pb-9 sm:p-8 max-w-550 mx-auto w-full">
             <div className="flex flex-col xl:flex-row gap-8">
               <div
                 className={`flex-1 flex flex-col gap-8 transition-all duration-500 ${

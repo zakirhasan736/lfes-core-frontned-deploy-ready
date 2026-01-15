@@ -254,7 +254,7 @@ const saveWatchlist = (list: WatchlistItem[]) => {
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in relative z-9">
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 matrix-card-box">
         <MetricBox
           label="Available Liquidity"
           val={user.balance}
@@ -323,7 +323,7 @@ const saveWatchlist = (list: WatchlistItem[]) => {
                 ))}
               </div>
             </div>
-            <div className="flex-1 p-4 sm:p-6 relative min-h-62.5">
+            <div className="flex-1 p-4 sm:p-6 relative  h-[260px] sm:h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={getMockData(period)}
