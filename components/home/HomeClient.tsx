@@ -245,32 +245,35 @@ type TradeWithPnL = Trade & { realized_pnl: number };
     setUser(prev => (prev ? { ...prev, balance: data.balance } : prev));
   };
 
-useTerminalSocket<TerminalSocketEvent>(event => {
-  switch (event.type) {
-    case 'order_update':
-      handleOrderUpdate(event.data.order);
-      break;
+useTerminalSocket<TerminalSocketEvent>(
+  event => {
+    switch (event.type) {
+      case 'order_update':
+        handleOrderUpdate(event.data.order);
+        break;
 
-    case 'order_filled':
-      handleOrderFilled(event.data.order_id);
-      break;
+      case 'order_filled':
+        handleOrderFilled(event.data.order_id);
+        break;
 
-    case 'trade':
-      handleTrade(event.data);
-      break;
+      case 'trade':
+        handleTrade(event.data);
+        break;
 
-    case 'balance_update':
-      handleBalanceUpdate(event.data);
-      break;
+      case 'balance_update':
+        handleBalanceUpdate(event.data);
+        break;
 
-    case 'mark_price':
-      setMarkPrices(p => ({
-        ...p,
-        [event.data.pair]: event.data.price,
-      }));
-      break;
-  }
-});
+      case 'mark_price':
+        setMarkPrices(p => ({
+          ...p,
+          [event.data.pair]: event.data.price,
+        }));
+        break;
+    }
+  },
+  isAuthenticated // ✅ THIS IS THE KEY
+);
 
 
  

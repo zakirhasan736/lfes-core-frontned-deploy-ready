@@ -1,7 +1,10 @@
 'use client';
 import { useEffect, useRef } from 'react';
 
-export function useTerminalSocket<T>(onMessage: (data: T) => void) {
+export function useTerminalSocket<T>(
+  onMessage: (data: T) => void,
+  isAuthenticated: boolean
+) {
   const wsRef = useRef<WebSocket | null>(null);
   const retryRef = useRef(0);
   const pingRef = useRef<number | null>(null);
@@ -58,11 +61,13 @@ export function useTerminalSocket<T>(onMessage: (data: T) => void) {
     wsRef.current = null;
   };
 
-  useEffect(() => {
-    connect();
-    return () => {
-      aliveRef.current = false;
-      cleanup();
-    };
-  }, []);
+useEffect(() => {
+  if (!isAuthenticated) return;
+
+  connect();
+  return () => {
+    aliveRef.current = false;
+    cleanup();
+  };
+}, [isAuthenticated]);
 }
