@@ -57,7 +57,7 @@ const NavItem: React.FC<NavItemProps> = ({
   return (
     <button
       onClick={onClick}
-      className={`relative w-full flex items-center gap-5 px-6 py-4 sm:py-5 transition-all duration-300 group ${
+      className={`relative w-full cursor-pointer flex items-center gap-5 px-6 py-4 sm:py-5 transition-all duration-300 group ${
         active
           ? 'text-(--gold) bg-(--gold)/5'
           : 'text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--text-primary)/5'
