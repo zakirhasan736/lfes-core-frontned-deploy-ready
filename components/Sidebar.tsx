@@ -196,7 +196,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="border-t border-(--border) bg-(--text-primary)/2">
         <button
           onClick={toggleCollapse}
-          className={`hidden lg:flex w-full items-center gap-5 px-8 py-6 text-(--text-secondary) hover:text-(--gold) transition-all ${
+          className={`hidden cursor-pointer lg:flex w-full items-center gap-5 px-8 py-6 text-(--text-secondary) hover:text-(--gold) transition-all ${
             isCollapsed ? 'justify-center' : ''
           }`}
         >
@@ -217,7 +217,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             onLogout();
             closeMobile();
           }}
-          className={`w-full flex items-center gap-5 px-6 sm:px-8 py-5 sm:py-6 text-red-500/40 hover:text-red-500 hover:bg-red-500/5 transition-all ${
+          className={`w-full flex cursor-pointer items-center gap-5 px-6 sm:px-8 py-5 sm:py-6 text-red-500/40 hover:text-red-500 hover:bg-red-500/5 transition-all ${
             isCollapsed && !isMobileOpen ? 'justify-center' : ''
           }`}
         >
