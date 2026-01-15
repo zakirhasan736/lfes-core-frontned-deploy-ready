@@ -113,19 +113,22 @@ body {
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 
-        .matrix-card-box .terminal-panel:last-child{
+        .matrix-card-box > .terminal-panel:last-child{
                 position: relative;
                 z-index: 2;
             }
-                .matrix-card-box .terminal-panel:nth-child(3){
+                .matrix-card-box > .terminal-panel:nth-child(3){
                 position: relative;
                 z-index: 4;
             }
-                .matrix-card-box .terminal-panel:nth-child(2){
+                .matrix-card-box > .terminal-panel:nth-child(2){
                 position: relative;
                 z-index: 6;
             }
-                .matrix-card-box .terminal-panel:first-child{
+                .matrix-card-box > .terminal-panel:first-child{
                 position: relative;
                  z-index: 6;
+            }
+            .matrix-card-box > .terminal-panel .terminal-panel{
+                position: absolute;
             }
