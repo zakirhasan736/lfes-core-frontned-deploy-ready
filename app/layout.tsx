@@ -21,6 +21,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Lions Family ECO System",
   description: "Lions Family Ecosystem - A comprehensive platform for the Lions family community",
+  icons: {
+    icon: "/LFES_logo_100pct_transparent.png",
+  },
 };
 
 export default function RootLayout({
