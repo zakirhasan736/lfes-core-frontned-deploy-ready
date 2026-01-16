@@ -56,7 +56,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
 
 export const apiService = {
   // --- AUTHENTICATION ---
-  
+
   async signup(name: string, email: string, password: string): Promise<User> {
     await request('/auth/signup', {
       method: 'POST',
@@ -93,16 +93,19 @@ export const apiService = {
       method: 'POST',
       body: JSON.stringify({ email, code }),
     });
-    return res.valid;
+
+    return res.valid === true;
   },
 
-  async resetAccessKey(email: string, password: string): Promise<void> {
+  async resetAccessKey(email: string, newPassword: string): Promise<void> {
     await request('/auth/recovery/reset', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        email,
+        new_password: newPassword,
+      }),
     });
   },
-
   // --- TRADING & ORDERS ---
 
   /**
@@ -164,22 +167,25 @@ export const apiService = {
   },
 
   // --- DATA RETRIEVAL ---
-  
+
   async fetchUserData(): Promise<User | null> {
     try {
       return await this.me();
     } catch (e) {
-      return null; 
+      return null;
     }
   },
 
   async fetchOrderBook(pair: string, currentPrice: number) {
     const base = pair.split('/')[0];
-    const generate = (isAsk: boolean) => Array.from({ length: 12 }, (_, i) => ({
-      price: isAsk ? currentPrice + (12 - i) * (currentPrice * 0.00015) : currentPrice - (i + 1) * (currentPrice * 0.00015),
-      size: Math.random() * (base === 'BTC' ? 0.3 : 3) + 0.05,
-      tot: Math.random() * 15 + 2
-    }));
+    const generate = (isAsk: boolean) =>
+      Array.from({ length: 12 }, (_, i) => ({
+        price: isAsk
+          ? currentPrice + (12 - i) * (currentPrice * 0.00015)
+          : currentPrice - (i + 1) * (currentPrice * 0.00015),
+        size: Math.random() * (base === 'BTC' ? 0.3 : 3) + 0.05,
+        tot: Math.random() * 15 + 2,
+      }));
     return { asks: generate(true), bids: generate(false) };
-  }
+  },
 };

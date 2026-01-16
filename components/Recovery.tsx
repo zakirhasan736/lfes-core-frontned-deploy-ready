@@ -1,5 +1,7 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { TerminalError } from '@/services/errors';
+
 import { apiService } from '@/services/apiService';
 import {
   Mail,
@@ -30,56 +32,109 @@ const Recovery: React.FC<RecoveryProps> = ({ onToggleLogin }) => {
   const [showPass2, setShowPass2] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const strength = passwordStrength(newPassword);
+  function passwordStrength(pw: string) {
+    if (pw.length < 6) return { label: 'Weak', score: 1 };
+    if (/[!@#$%^&*]/.test(pw) && pw.length >= 10)
+      return { label: 'Strong', score: 3 };
+    return { label: 'Medium', score: 2 };
+  }
+
+const RESEND_DELAY = 60;
+
+const [resendTimer, setResendTimer] = useState(0);
 
   const handleRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+
     try {
       await apiService.requestKeyRecovery(email);
       setStep('verify');
-    } catch (error) {
-      setError('Protocol disruption. Check communication channel.');
+      setResendTimer(RESEND_DELAY);
+
+    } catch (err) {
+      if (err instanceof TerminalError) {
+        setError(err.message);
+      } else {
+        setError('Protocol disruption. Check communication channel.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+
     try {
       const isValid = await apiService.verifyRecoveryCode(email, code);
+
       if (isValid) {
         setStep('reset');
       } else {
         setError('Invalid verification cipher. Access denied.');
       }
-    } catch (error) {
-      setError('Sync error during verification.');
+    } catch (err) {
+      if (err instanceof TerminalError) {
+        setError(err.message);
+      } else {
+        setError('Sync error during verification.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
+
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (newPassword !== confirmPassword) {
       setError('Key mismatch. Ciphers must be identical.');
       return;
     }
+    if (strength.score < 2) {
+      setError('Password too weak');
+      return;
+    }
     setIsLoading(true);
     setError('');
+
     try {
       await apiService.resetAccessKey(email, newPassword);
       setStep('complete');
-    } catch (error) {
-      setError('Reset sequence failed. Internal hub error.');
+    } catch (err) {
+      if (err instanceof TerminalError) {
+        setError(err.message);
+      } else {
+        setError('Reset sequence failed. Internal hub error.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
+useEffect(() => {
+  if (resendTimer <= 0) return;
+
+  const interval = setInterval(() => {
+    setResendTimer(t => t - 1);
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [resendTimer]);
+useEffect(() => {
+  if (step === 'complete') {
+    const t = setTimeout(onToggleLogin, 2500);
+    return () => clearTimeout(t);
+  }
+}, [step]);
+
+
 
   const renderHeader = (icon: React.ReactNode, title: string) => (
     <>
@@ -101,6 +156,7 @@ const Recovery: React.FC<RecoveryProps> = ({ onToggleLogin }) => {
 
       <div className="w-full max-w-lg bg-[#0d1624] rounded-3xl sm:rounded-[2.5rem] shadow-[0_30px_80px_rgba(0,0,0,0.8)] border border-[#1e293b] overflow-hidden relative group">
         <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-50"></div>
+
 
         <div className="p-8 sm:p-12 text-center">
           {step === 'request' && (
@@ -186,6 +242,20 @@ const Recovery: React.FC<RecoveryProps> = ({ onToggleLogin }) => {
                     onChange={e => setCode(e.target.value)}
                     required
                   />
+                  <button
+                    type="button"
+                    disabled={resendTimer > 0}
+                    onClick={async () => {
+                      await apiService.requestKeyRecovery(email);
+                      setResendTimer(RESEND_DELAY);
+                    }}
+                    className="text-[10px] font-black uppercase tracking-widest mt-4
+    text-[#475569] hover:text-[#d4af37] disabled:opacity-40"
+                  >
+                    {resendTimer > 0
+                      ? `Resend available in ${resendTimer}s`
+                      : 'Resend Code'}
+                  </button>
                 </div>
                 {error && (
                   <p className="text-red-500 text-[10px] font-black uppercase tracking-widest px-2">
@@ -244,6 +314,19 @@ const Recovery: React.FC<RecoveryProps> = ({ onToggleLogin }) => {
                       {showPass1 ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                  {newPassword && (
+                    <p
+                      className={`text-[9px] font-black uppercase ${
+                        strength.score === 1
+                          ? 'text-red-500'
+                          : strength.score === 2
+                          ? 'text-yellow-400'
+                          : 'text-green-500'
+                      }`}
+                    >
+                      Strength: {strength.label}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-[0.2em] ml-2">
