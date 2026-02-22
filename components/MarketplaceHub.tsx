@@ -234,7 +234,7 @@ const MarketplaceHub: React.FC = () => {
                     <div className="flex items-center justify-between">
                        <div className="flex items-center gap-4">
                           <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 group-hover/card:border-blue-500/30 transition-colors shadow-lg">
-                             <span className="text-lg font-black gold-text">{item.author.charAt(0)}</span>
+                             <span className="text-lg font-black gold-text">{item?.author?.charAt(0) || ""}</span>
                           </div>
                           <div className="flex flex-col">
                              <span className="text-[13px] font-black text-white uppercase tracking-widest">{item.author}</span>

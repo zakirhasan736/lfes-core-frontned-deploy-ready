@@ -1,7 +1,7 @@
 
 'use client'
 import React, { useState, useRef, useEffect } from 'react';
-import { getGeminiResponse } from '../services/geminiService';
+import { getGeminiResponse } from '@/services/geminiService';
 import { Message } from '@/types/index';
 
 const AIAssistant: React.FC = () => {

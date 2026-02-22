@@ -121,7 +121,7 @@ const WalletView: React.FC<WalletViewProps> = ({
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-5">
               <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-[var(--gold)]/20 to-transparent flex items-center justify-center text-[var(--gold)] font-black text-lg border border-[var(--gold)]/10 shadow-lg">
-                {asset.symbol.charAt(0)}
+                {asset?.symbol?.charAt(0) || ""}
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-lg font-black text-white tracking-tighter uppercase">{asset.symbol}</span>
@@ -523,7 +523,7 @@ const WalletView: React.FC<WalletViewProps> = ({
               >
                 <div className="flex items-center gap-5">
                   <div className="w-12 h-12 rounded-[1rem] bg-white/5 flex items-center justify-center text-[var(--gold)] font-black group-hover:scale-110 transition-transform">
-                    {asset.symbol.charAt(0)}
+                    {asset?.symbol?.charAt(0) || ""}
                   </div>
                   <div className="text-left">
                     <span className="block text-[13px] font-black text-white uppercase tracking-widest leading-none mb-1">

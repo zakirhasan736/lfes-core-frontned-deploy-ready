@@ -728,7 +728,7 @@ useTerminalSocket<TerminalSocketEvent>(
               </span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-(--gold)/10 flex items-center justify-center border border-(--border) text-(--gold) font-black uppercase shadow-inner">
-              {user?.name.charAt(0)}
+              {user?.name?.charAt(0) || ""}
             </div>
           </div>
           <div className="flex items-center gap-3 sm:gap-6">

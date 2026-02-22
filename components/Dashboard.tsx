@@ -9,8 +9,8 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line, 
+  LineChart, 
+  Line,  
 } from 'recharts';
 type WatchlistItem = {
   sym: string;
