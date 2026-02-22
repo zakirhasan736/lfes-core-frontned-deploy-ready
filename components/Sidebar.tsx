@@ -9,9 +9,40 @@ import {
   ChevronLeft,
   ChevronRight,
   LucideIcon,
+  Shield,
+  Wallet,
+  Repeat,
+  History,
+  GraduationCap,
+  Briefcase,
+  MessageSquare,
+  Gamepad2,
+  Trophy,
+  Heart,
+  Globe,
+  PieChart,
+  Users,
+  Settings,
+  Lock,
+  LayoutDashboard,
+  Zap,
+  CreditCard,
+  HelpCircle,
+  Info,
+  Landmark,
+  Megaphone,
+  Radio,
+  Tv,
+  Gift,
+  Handshake,
+  Map,
+  FileText,
+  Scale,
+  Car,
+  X,
 } from 'lucide-react';
 import Image from 'next/image';
-
+import { TabID, User } from '@/types';
 /* =======================
    Types
 ======================= */
@@ -27,8 +58,10 @@ interface NavItemProps {
 }
 
 interface SidebarProps {
-  activeTab: 'dashboard' | 'exchange';
-  setActiveTab: (tab: 'dashboard' | 'exchange') => void;
+  // activeTab: 'dashboard' | 'exchange';
+  // setActiveTab: (tab: 'dashboard' | 'exchange') => void;
+  activeTab: TabID;
+  setActiveTab: (tab: TabID) => void;
   onLogout: () => void;
   userName: string;
   showLiveStream: boolean;
@@ -53,6 +86,12 @@ const NavItem: React.FC<NavItemProps> = ({
   extra,
   isCollapsed,
   isMobileOpen,
+  // activeTab,
+  // setActiveTab,
+  // onLogout,
+  // toggleCollapse,
+  // closeMobile,
+  // user,
 }) => {
   return (
     <button
@@ -104,14 +143,77 @@ const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen,
   closeMobile,
 }) => {
+  const NavItem = ({
+    label,
+    id,
+    icon: Icon,
+    active,
+    badge,
+    comingSoon,
+  }: any) => (
+    <button
+      onClick={() => {
+        setActiveTab(id);
+        closeMobile();
+      }}
+      className={`relative w-full flex items-center gap-4 px-6 py-2.5 transition-all duration-300 group ${
+        active
+          ? 'text-[var(--gold)] bg-[var(--gold)]/5'
+          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--text-primary)]/5'
+      } ${isCollapsed && !isMobileOpen ? 'justify-center' : ''}`}
+    >
+      {active && (
+        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--gold)] shadow-[0_0_15px_var(--gold)]"></div>
+      )}
+      <div
+        className={`shrink-0 transition-transform ${active ? 'scale-110 drop-shadow-[0_0_5px_var(--gold-glow)]' : 'group-hover:scale-110'}`}
+      >
+        <Icon size={18} />
+      </div>
+      {(!isCollapsed || isMobileOpen) && (
+        <div className="flex-1 flex items-center justify-between overflow-hidden">
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap">
+            {label}
+          </span>
+          {comingSoon ? (
+            <span className="px-1.5 py-0.5 rounded-md bg-[var(--text-secondary)]/10 text-[var(--text-secondary)] text-[6px] font-black tracking-tighter">
+              SOON
+            </span>
+          ) : (
+            badge && (
+              <span className="px-1.5 py-0.5 rounded-md bg-[var(--gold)]/10 text-[var(--gold)] text-[7px] font-black">
+                {badge}
+              </span>
+            )
+          )}
+        </div>
+      )}
+    </button>
+  );
+
+  const SectionTitle = ({ title }: { title: string }) => {
+    if (isCollapsed && !isMobileOpen)
+      return (
+        <div className="h-px bg-[var(--border)] mx-4 my-3 opacity-20"></div>
+      );
+    return (
+      <div className="px-6 py-2 mt-4">
+        <span className="text-[7px] font-black text-[var(--text-secondary)] opacity-40 uppercase tracking-[0.5em]">
+          {title}
+        </span>
+      </div>
+    );
+  };
+
+  if (!Users) return null;
   return (
     <aside
       className={`fixed lg:relative inset-y-0 left-0 bg-(--bg-panel) border-r border-(--border) flex flex-col z-110 transition-all duration-500 ${
         isMobileOpen
           ? 'w-64 sm:w-72 translate-x-0'
           : isCollapsed
-          ? 'w-20 -translate-x-full lg:translate-x-0'
-          : 'w-64 sm:w-72 -translate-x-full lg:translate-x-0'
+            ? 'w-20 -translate-x-full lg:translate-x-0'
+            : 'w-64 sm:w-72 -translate-x-full lg:translate-x-0'
       }`}
     >
       {/* Brand */}
@@ -190,6 +292,181 @@ const Sidebar: React.FC<SidebarProps> = ({
             )
           }
         />
+        <SectionTitle title="Core Exchange" />
+        <NavItem
+          label="Home / Vision"
+          id="dashboard"
+          active={activeTab === 'dashboard'}
+          icon={LayoutDashboard}
+        />
+        <NavItem
+          label="Spot Terminal"
+          id="exchange"
+          active={activeTab === 'exchange'}
+          icon={Zap}
+        />
+        <NavItem
+          label="Futures"
+          id="futures"
+          active={activeTab === 'futures'}
+          icon={Activity}
+          comingSoon
+        />
+        <NavItem
+          label="P2P Escrow"
+          id="p2p"
+          active={activeTab === 'p2p'}
+          icon={Repeat}
+          comingSoon
+        />
+
+        <SectionTitle title="Finance & Assets" />
+        <NavItem
+          label="Wallet Vault"
+          id="wallet"
+          active={activeTab === 'wallet'}
+          icon={Wallet}
+        />
+        <NavItem
+          label="Fleet Assets"
+          id="vehicles"
+          active={activeTab === 'vehicles'}
+          icon={Car}
+          badge="NEW"
+        />
+        <NavItem
+          label="Exec History"
+          id="orders"
+          active={activeTab === 'orders'}
+          icon={History}
+        />
+        <NavItem
+          label="VIP & Fees"
+          id="fees"
+          active={activeTab === 'fees'}
+          icon={Landmark}
+          comingSoon
+        />
+
+        <SectionTitle title="Intelligence" />
+        <NavItem
+          label="Lion AI Core"
+          id="ai-assistant"
+          active={activeTab === 'ai-assistant'}
+          icon={Shield}
+        />
+        <NavItem
+          label="AI Academy"
+          id="academy"
+          active={activeTab === 'academy'}
+          icon={GraduationCap}
+        />
+
+        <SectionTitle title="Social & Enterprise" />
+        <NavItem
+          label="Business Lab"
+          id="business-lab"
+          active={activeTab === 'business-lab'}
+          icon={Briefcase}
+        />
+        <NavItem
+          label="Marketplace"
+          id="marketplace"
+          active={activeTab === 'marketplace'}
+          icon={Megaphone}
+        />
+        <NavItem
+          label="Community"
+          id="chat"
+          active={activeTab === 'chat'}
+          icon={MessageSquare}
+        />
+        <NavItem
+          label="Voice Lounge"
+          id="social-lounge"
+          active={activeTab === 'social-lounge'}
+          icon={Radio}
+        />
+
+        <SectionTitle title="Entertainment & Viral" />
+        <NavItem
+          label="Lion Entertainment"
+          id="entertainment"
+          active={activeTab === 'entertainment'}
+          icon={Gamepad2}
+        />
+        <NavItem
+          label="Rewards Hub"
+          id="rewards"
+          active={activeTab === 'rewards'}
+          icon={Gift}
+          badge="VIP"
+        />
+        <NavItem
+          label="Sports League"
+          id="sport"
+          active={activeTab === 'sport'}
+          icon={Trophy}
+        />
+
+        <SectionTitle title="Economy & Trust" />
+        <NavItem
+          label="FAMILY Token"
+          id="token-economy"
+          active={activeTab === 'token-economy'}
+          icon={PieChart}
+          badge="NEW"
+        />
+        <NavItem
+          label="Partnerships"
+          id="partnerships"
+          active={activeTab === 'partnerships'}
+          icon={Handshake}
+        />
+        <NavItem
+          label="Heart Fund"
+          id="charity"
+          active={activeTab === 'charity'}
+          icon={Heart}
+        />
+        <NavItem
+          label="Investors"
+          id="investors"
+          active={activeTab === 'investors'}
+          icon={Users}
+        />
+        <NavItem
+          label="Vision / About"
+          id="about"
+          active={activeTab === 'about'}
+          icon={Info}
+        />
+
+        <SectionTitle title="System" />
+        <NavItem
+          label="Security"
+          id="security"
+          active={activeTab === 'security'}
+          icon={Lock}
+        />
+        <NavItem
+          label="Legal / Compliance"
+          id="legal"
+          active={activeTab === 'legal'}
+          icon={Scale}
+        />
+        <NavItem
+          label="Support"
+          id="support"
+          active={activeTab === 'support'}
+          icon={HelpCircle}
+        />
+        <NavItem
+          label="Status"
+          id="status"
+          active={activeTab === 'status'}
+          icon={Activity}
+        />
       </nav>
 
       {/* Utilities */}
@@ -225,6 +502,42 @@ const Sidebar: React.FC<SidebarProps> = ({
           {(!isCollapsed || isMobileOpen) && (
             <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em]">
               System Exit
+            </span>
+          )}
+        </button>
+      </div>
+      <div className="border-t border-[var(--border)] bg-[var(--text-primary)]/[0.02]">
+        {(!isCollapsed || isMobileOpen) && (
+          <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[var(--gold)]/10 flex items-center justify-center text-[var(--gold)] font-black text-[10px]">
+                {Users.name.charAt(0)}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] font-black text-[var(--text-primary)] uppercase tracking-widest truncate max-w-[100px]">
+                  {Users.name}
+                </span>
+                <span className="text-[7px] font-bold text-[var(--gold)] uppercase">
+                  VIP 
+                  {/* {Users.vipTier} */}
+                </span>
+              </div>
+            </div>
+            <Settings
+              size={14}
+              onClick={() => setActiveTab('settings')}
+              className="text-[var(--text-secondary)] opacity-40 hover:opacity-100 cursor-pointer"
+            />
+          </div>
+        )}
+        <button
+          onClick={onLogout}
+          className={`w-full flex items-center gap-4 px-6 py-4 text-red-500/40 hover:text-red-500 transition-all ${isCollapsed && !isMobileOpen ? 'justify-center' : ''}`}
+        >
+          <Power size={18} />
+          {(!isCollapsed || isMobileOpen) && (
+            <span className="text-[9px] font-black uppercase tracking-[0.3em]">
+              Logout
             </span>
           )}
         </button>

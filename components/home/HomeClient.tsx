@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Dashboard from '@/components/Dashboard';
 import Exchange from '@/components/Exchange';
@@ -8,7 +8,22 @@ import Signup from '@/components/Signup';
 import Recovery from '@/components/Recovery';
 import LiveStream from '@/components/LiveStream';
 import AIAssistant from '@/components/AIAssistant';
-import { User, Trade} from '@/types';
+import WalletView from '@/components/WalletView';
+import EcosystemSection from '@/components/EcosystemSection';
+import Academy from '@/components/Academy';
+import BusinessLab from '@/components/BusinessLab';
+import MarketplaceHub from '@/components/MarketplaceHub';
+import SocialHub from '@/components/SocialHub';
+import EntertainmentHub from '@/components/EntertainmentHub';
+import RewardsHub from '@/components/RewardsHub';
+import SportHub from '@/components/SportHub';
+import TokenEconomyHub from '@/components/TokenEconomyHub';
+import PartnershipHub from '@/components/PartnershipHub';
+import CharityHub from '@/components/CharityHub';
+import InvestorTrustHub, { TrustTab } from '@/components/InvestorTrustHub';
+import Vehicles from '@/components/Vehicles';
+import Settings from '@/components/Settings';
+import { User, Trade, TabID, AssetBalance } from '@/types';
 import {
   Sun,
   Moon,
@@ -18,13 +33,18 @@ import {
   CheckCircle2,
   Info,
   Loader2,
+  ShieldCheck,
+  Bell,
+  Wallet,
+  Activity,
 } from 'lucide-react';
-import { apiService } from '@/services/apiService';
+import { apiService, connectWS } from '@/services/apiService';
 import { TerminalError } from '@/services/errors';
 import { useTerminalSocket } from '@/services/useTerminalSocket'; 
 
 export interface OpenOrder extends Trade {
-  status: 'pending' | 'filling' | 'filled' | 'cancelled';
+  status: 'pending' | 'filling' | 'filled' | 'cancelled' | 'partially filled';
+  order_id?: string;
 }
 export interface SignupProps {
   onSignup: (user: User) => void;
@@ -51,13 +71,57 @@ type TerminalSocketEvent =
       type: 'mark_price';
       data: { pair: string; price: number };
     };
-
+export interface Transaction {
+  id: string;
+  type: 'Deposit' | 'Withdrawal';
+  asset: string;
+  amount: number;
+  status: 'Processing' | 'Finalized' | 'Failed';
+  time: string;
+  txHash: string;
+}
 interface AppNotification {
   id: string;
-  type: 'error' | 'success' | 'info';
+  type: 'error' | 'success' | 'info' | 'system';
+  title?: string;
   message: string;
   code?: string;
+  time?: string;
 }
+const INITIAL_ASSETS: AssetBalance[] = [
+  {
+    symbol: 'USDT',
+    name: 'Tether USD',
+    total: 100000.0,
+    available: 100000.0,
+    locked: 0,
+    valueUsdt: 1.0,
+  },
+  {
+    symbol: 'BTC',
+    name: 'Bitcoin',
+    total: 0.5234,
+    available: 0.5234,
+    locked: 0,
+    valueUsdt: 98120.45,
+  },
+  {
+    symbol: 'ETH',
+    name: 'Ethereum',
+    total: 4.21,
+    available: 4.21,
+    locked: 0,
+    valueUsdt: 2740.12,
+  },
+  {
+    symbol: 'FAMILY',
+    name: 'FAMILY Token',
+    total: 25000.0,
+    available: 25000.0,
+    locked: 0,
+    valueUsdt: 0.42,
+  },
+];
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -65,12 +129,12 @@ const App: React.FC = () => {
     'login'
   );
   const [user, setUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'exchange'>(
-    'dashboard'
-  );
+ const [activeTab, setActiveTab] = useState<TabID>('dashboard');
   const [trades, setTrades] = useState<Trade[]>([]);
   const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
   const [showLiveStream, setShowLiveStream] = useState<boolean>(false);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [assets, setAssets] = useState<AssetBalance[]>(INITIAL_ASSETS);
   const [showAIAssistant, setShowAIAssistant] = useState<boolean>(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] =
@@ -80,7 +144,19 @@ const App: React.FC = () => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [orderHistory, setOrderHistory] = useState<OpenOrder[]>([]);
   const [markPrices, setMarkPrices] = useState<Record<string, number>>({});
+  const [balancePulse, setBalancePulse] = useState(false);
 
+    const [marketPrices, setMarketPrices] = useState<Record<string, number>>({
+      BTC: 98120.45,
+      ETH: 2740.12,
+      SOL: 145.22,
+      AVAX: 32.44,
+      FAMILY: 0.42,
+      USDT: 1.0,
+    });
+
+    const wsRef = useRef<WebSocket | null>(null);
+    
   const [pendingTrade, setPendingTrade] = useState<{
     side: 'buy' | 'sell';
     pair: string;
@@ -88,7 +164,18 @@ const App: React.FC = () => {
     amount: number;
     total: number;
   } | null>(null);
+const totalEquity = useMemo(() => {
+  return assets.reduce((sum, a) => {
+    const livePrice = marketPrices[a.symbol] || a.valueUsdt;
+    return sum + a.total * livePrice;
+  }, 0);
+}, [assets, marketPrices]);
 
+useEffect(() => {
+  setBalancePulse(true);
+  const timer = setTimeout(() => setBalancePulse(false), 1000);
+  return () => clearTimeout(timer);
+}, [totalEquity]);
   const addNotification = useCallback(
     (
       message: string,
@@ -105,7 +192,26 @@ const App: React.FC = () => {
     },
     []
   );
-
+  const calculatedAssets = useMemo(() => {
+    return assets.map(asset => {
+      let lockedAmount = 0;
+      if (asset.symbol === 'USDT') {
+        lockedAmount = openOrders
+          .filter(o => o.side === 'buy')
+          .reduce((sum, o) => sum + o.price * o.amount, 0);
+      } else {
+        lockedAmount = openOrders
+          .filter(o => o.side === 'sell' && o.pair.startsWith(asset.symbol))
+          .reduce((sum, o) => sum + o.amount, 0);
+      }
+      return {
+        ...asset,
+        valueUsdt: marketPrices[asset.symbol] || asset.valueUsdt,
+        locked: lockedAmount,
+        available: Math.max(0, asset.total - lockedAmount),
+      };
+    });
+  }, [assets, openOrders, marketPrices]);
   // Sync Global State from Backend
   const refreshTerminalState = useCallback(async () => {
     try {
@@ -185,6 +291,49 @@ const App: React.FC = () => {
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+  const handleTradeExecuted = useCallback(
+    (trade: Trade) => {
+      const fee = trade.total * 0.001;
+      setTrades(prev => [trade, ...prev].slice(0, 100));
+      setOpenOrders(prev => prev.filter(o => o.id !== trade.id));
+      setAssets(prev => {
+        const baseSymbol = trade.pair.split('/')[0];
+        return prev.map(a => {
+          if (a.symbol === 'USDT') {
+            const delta =
+              trade.side === 'buy' ? -(trade.total + fee) : trade.total - fee;
+            return { ...a, total: a.total + delta };
+          }
+          if (a.symbol === baseSymbol) {
+            return {
+              ...a,
+              total:
+                trade.side === 'buy'
+                  ? a.total + trade.amount
+                  : a.total - trade.amount,
+            };
+          }
+          return a;
+        });
+      });
+      addNotification(
+        `${trade.side.toUpperCase()} Filled: ${trade.pair} (Fee: ${fee.toFixed(2)} USDT)`,
+        'success',
+        'Trade Executed',
+      );
+    },
+    [addNotification],
+  );
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    const ws = connectWS((event, data) => {
+      if (event === 'trade.executed') handleTradeExecuted(data);
+    });
+    wsRef.current = ws;
+    return () => {
+      if (wsRef.current) wsRef.current.close();
+    };
+  }, [isAuthenticated, user, handleTradeExecuted]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -382,6 +531,83 @@ useTerminalSocket<TerminalSocketEvent>(
     }
   }
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return (
+          <Dashboard user={user!} trades={trades} markPrices={markPrices} />
+        );
+      case 'exchange':
+        return (
+          <Exchange
+            user={user!}
+            trades={trades}
+            openOrders={openOrders}
+            onTrade={handleOrderInitiation}
+            onCancelOrder={handleOrderCancellation}
+          />
+        );
+      case 'wallet':
+        return (
+          <WalletView
+            user={user!}
+            trades={trades}
+            assets={calculatedAssets}
+            openOrders={openOrders}
+            transactions={transactions}
+            onDeposit={(s, a) =>
+              addNotification(`Bridge Synchronized: ${a} ${s}`, 'success')
+            }
+            onWithdraw={(s, a) =>
+              addNotification(`Withdrawal Finalized: ${a} ${s}`, 'success')
+            }
+          />
+        );
+      case 'vehicles':
+        return <Vehicles />;
+      case 'ai-assistant':
+        return <AIAssistant />;
+      case 'academy':
+        return <Academy />;
+      case 'business-lab':
+        return <BusinessLab />;
+      case 'marketplace':
+        return <MarketplaceHub />;
+      case 'business-network':
+        return <SocialHub initialTab="business" />;
+      case 'chat':
+        return <SocialHub initialTab="community" />;
+      case 'social-lounge':
+        return <SocialHub initialTab="voice" />;
+      case 'entertainment':
+        return <EntertainmentHub />;
+      case 'rewards':
+        return <RewardsHub />;
+      case 'sport':
+        return <SportHub />;
+      case 'token-economy':
+        return <TokenEconomyHub />;
+      case 'partnerships':
+        return <PartnershipHub />;
+      case 'charity':
+        return <CharityHub />;
+      case 'investors':
+      case 'about':
+      case 'legal':
+      case 'support':
+        return (
+          <InvestorTrustHub
+            initialTab={
+              activeTab === 'support' ? 'contact' : (activeTab as TrustTab)
+            }
+          />
+        );
+      case 'settings':
+        return <Settings />;
+      default:
+        return <EcosystemSection tabId={activeTab} />;
+    }
+  };
   return (
     <div className="flex h-screen bg-(--bg-main) overflow-hidden">
       {/* Toast Notifications */}
@@ -393,8 +619,8 @@ useTerminalSocket<TerminalSocketEvent>(
               n.type === 'error'
                 ? 'border-red-500 bg-red-500/5'
                 : n.type === 'success'
-                ? 'border-green-500 bg-green-500/5'
-                : 'border-(--gold) bg-(--gold)/5'
+                  ? 'border-green-500 bg-green-500/5'
+                  : 'border-(--gold) bg-(--gold)/5'
             }`}
           >
             <div className="shrink-0 mt-0.5">
@@ -421,7 +647,7 @@ useTerminalSocket<TerminalSocketEvent>(
             <button
               onClick={() =>
                 setNotifications(prev =>
-                  prev.filter(notif => notif.id !== n.id)
+                  prev.filter(notif => notif.id !== n.id),
                 )
               }
               className="opacity-30 hover:opacity-100 transition-opacity"
@@ -505,6 +731,45 @@ useTerminalSocket<TerminalSocketEvent>(
               {user?.name.charAt(0)}
             </div>
           </div>
+          <div className="flex items-center gap-3 sm:gap-6">
+            <div
+              className={`flex items-center gap-3 px-3 py-1.5 sm:px-5 sm:py-2 rounded-2xl border transition-all duration-500 cursor-pointer ${balancePulse ? 'bg-[var(--gold)]/20 border-[var(--gold)]/50 scale-105 shadow-[0_0_20px_var(--gold-glow)]' : 'bg-white/5 border-white/10 hover:border-[var(--gold)]/30'}`}
+            >
+              <Wallet
+                size={16}
+                className={balancePulse ? 'text-white' : 'text-[var(--gold)]'}
+              />
+              <div className="flex flex-col">
+                <span
+                  className={`hidden sm:block text-[7px] font-black uppercase tracking-[0.2em] ${balancePulse ? 'text-white/60' : 'text-[var(--text-secondary)]'}`}
+                >
+                  Net Terminal Equity
+                </span>
+                <span
+                  className={`text-[11px] sm:text-[13px] font-black tabular-nums text-white`}
+                >
+                  $
+                  {totalEquity.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowAIAssistant(!showAIAssistant)}
+              className={`p-2 sm:p-2.5 rounded-xl border transition-all ${showAIAssistant ? 'bg-[var(--gold)] text-[#060b13] shadow-[0_0_20px_var(--gold-glow)]' : 'border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--gold)] bg-[var(--bg-panel)]'}`}
+            >
+              <ShieldCheck size={18} />
+            </button>
+            <button
+              onClick={toggleTheme}
+              className="p-2 sm:p-2.5 rounded-xl border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--gold)] transition-all bg-[var(--bg-panel)]"
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+          </div>
         </header>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -520,21 +785,8 @@ useTerminalSocket<TerminalSocketEvent>(
                     <LiveStream />
                   </div>
                 )}
-                {activeTab === 'dashboard' ? (
-                  <Dashboard
-                    user={user!}
-                    trades={trades}
-                    markPrices={markPrices}
-                  />
-                ) : (
-                  <Exchange
-                    user={user!}
-                    trades={trades}
-                    openOrders={openOrders}
-                    onTrade={handleOrderInitiation}
-                    onCancelOrder={handleOrderCancellation}
-                  />
-                )}
+
+                {renderContent()}
               </div>
               {showAIAssistant && (
                 <div className="w-full xl:w-100 2xl:w-125 shrink-0 animate-fade-in">
