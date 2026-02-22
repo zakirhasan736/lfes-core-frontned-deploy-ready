@@ -10,7 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   LineChart,
-  Line,
+  Line, 
 } from 'recharts';
 type WatchlistItem = {
   sym: string;
