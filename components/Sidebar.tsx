@@ -245,7 +245,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-6 sm:py-10 space-y-2">
+      <nav className="flex-1 overflow-y-auto custom-scrollbar py-2">
         <NavItem
           label="Protocol Hub"
           icon={Activity}
@@ -511,14 +511,14 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-[var(--gold)]/10 flex items-center justify-center text-[var(--gold)] font-black text-[10px]">
-                {Users?.name?.charAt(0) || ""}
+                {Users?.name?.charAt(0) || ''}
               </div>
               <div className="flex flex-col">
                 <span className="text-[9px] font-black text-[var(--text-primary)] uppercase tracking-widest truncate max-w-[100px]">
                   {Users?.name}
                 </span>
                 <span className="text-[7px] font-bold text-[var(--gold)] uppercase">
-                  VIP 
+                  VIP
                   {/* {Users.vipTier} */}
                 </span>
               </div>
