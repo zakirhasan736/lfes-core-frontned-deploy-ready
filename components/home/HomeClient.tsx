@@ -744,9 +744,6 @@ useTerminalSocket<TerminalSocketEvent>(
                   })}
                 </span>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-(--gold)/10 flex items-center justify-center border border-(--border) text-(--gold) font-black uppercase shadow-inner">
-                {user?.name?.charAt(0) || ''}
-              </div>
             </div>
 
             <button
@@ -761,6 +758,9 @@ useTerminalSocket<TerminalSocketEvent>(
             >
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+            <div className="w-10 h-10 rounded-xl bg-(--gold)/10 flex items-center justify-center border border-(--border) text-(--gold) font-black uppercase shadow-inner">
+              {user?.name?.charAt(0) || ''}
+            </div>
           </div>
         </header>
 
