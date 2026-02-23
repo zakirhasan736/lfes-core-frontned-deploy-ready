@@ -246,7 +246,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto custom-scrollbar py-2">
-        <NavItem
+        {/* <NavItem
           label="Protocol Hub"
           icon={Activity}
           active={activeTab === 'dashboard'}
@@ -274,24 +274,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           className={`my-6 border-t border-(--border) ${
             isCollapsed && !isMobileOpen ? 'mx-4' : 'mx-6 sm:mx-8'
           }`}
-        />
+        /> */}
 
-        <NavItem
-          label="Live Stream"
-          icon={Video}
-          active={showLiveStream}
-          onClick={() => {
-            toggleLiveStream();
-            if (isMobileOpen) closeMobile();
-          }}
-          isCollapsed={isCollapsed}
-          isMobileOpen={isMobileOpen}
-          extra={
-            showLiveStream && (
-              <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e] animate-pulse" />
-            )
-          }
-        />
         <SectionTitle title="Core Exchange" />
         <NavItem
           label="Home / Vision"
@@ -318,6 +302,23 @@ const Sidebar: React.FC<SidebarProps> = ({
           active={activeTab === 'p2p'}
           icon={Repeat}
           comingSoon
+        />
+         <NavItem
+          label="Live Stream"
+          id="live-stream"
+          icon={Video}
+          active={showLiveStream}
+          onClick={() => {
+            toggleLiveStream();
+            if (isMobileOpen) closeMobile();
+          }}
+          isCollapsed={isCollapsed}
+          isMobileOpen={isMobileOpen}
+          extra={
+            showLiveStream && (
+              <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_10px_#22c55e] animate-pulse" />
+            )
+          }
         />
 
         <SectionTitle title="Finance & Assets" />
@@ -506,42 +507,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
         </button>
       </div>
-      <div className="border-t border-[var(--border)] bg-[var(--text-primary)]/[0.02]">
-        {(!isCollapsed || isMobileOpen) && (
-          <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[var(--gold)]/10 flex items-center justify-center text-[var(--gold)] font-black text-[10px]">
-                {Users?.name?.charAt(0) || ''}
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[9px] font-black text-[var(--text-primary)] uppercase tracking-widest truncate max-w-[100px]">
-                  {Users?.name}
-                </span>
-                <span className="text-[7px] font-bold text-[var(--gold)] uppercase">
-                  VIP
-                  {/* {Users.vipTier} */}
-                </span>
-              </div>
-            </div>
-            <Settings
-              size={14}
-              onClick={() => setActiveTab('settings')}
-              className="text-[var(--text-secondary)] opacity-40 hover:opacity-100 cursor-pointer"
-            />
-          </div>
-        )}
-        <button
-          onClick={onLogout}
-          className={`w-full flex items-center gap-4 px-6 py-4 text-red-500/40 hover:text-red-500 transition-all ${isCollapsed && !isMobileOpen ? 'justify-center' : ''}`}
-        >
-          <Power size={18} />
-          {(!isCollapsed || isMobileOpen) && (
-            <span className="text-[9px] font-black uppercase tracking-[0.3em]">
-              Logout
-            </span>
-          )}
-        </button>
-      </div>
+   
     </aside>
   );
 };
