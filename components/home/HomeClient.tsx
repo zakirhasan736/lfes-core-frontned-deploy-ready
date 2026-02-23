@@ -709,32 +709,21 @@ useTerminalSocket<TerminalSocketEvent>(
             </div>
           </div>
 
-          <div className="flex items-center gap-8">
-            <button
-              onClick={toggleTheme}
-              className="p-2.5 rounded-xl border border-(--border) text-(--text-secondary) hover:text-(--gold) transition-all bg-(--bg-panel)"
-            >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-            <div className="hidden sm:flex flex-col items-end">
-              <span className="text-[8px] font-black text-(--text-secondary) uppercase tracking-widest">
-                Global Balance
-              </span>
-              <span className="text-lg font-black gold-text tabular-nums">
-                $
-                {user?.balance.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                })}
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-(--gold)/10 flex items-center justify-center border border-(--border) text-(--gold) font-black uppercase shadow-inner">
-              {user?.name?.charAt(0) || ""}
-            </div>
-          </div>
           <div className="flex items-center gap-3 sm:gap-6">
             <div
               className={`flex items-center gap-3 px-3 py-1.5 sm:px-5 sm:py-2 rounded-2xl border transition-all duration-500 cursor-pointer ${balancePulse ? 'bg-[var(--gold)]/20 border-[var(--gold)]/50 scale-105 shadow-[0_0_20px_var(--gold-glow)]' : 'bg-white/5 border-white/10 hover:border-[var(--gold)]/30'}`}
             >
+              <div className="hidden sm:flex flex-col items-end">
+                <span className="text-[8px] font-black text-(--text-secondary) uppercase tracking-widest">
+                  Global Balance
+                </span>
+                <span className="text-lg font-black gold-text tabular-nums">
+                  $
+                  {user?.balance.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
               <Wallet
                 size={16}
                 className={balancePulse ? 'text-white' : 'text-[var(--gold)]'}
@@ -754,6 +743,9 @@ useTerminalSocket<TerminalSocketEvent>(
                     maximumFractionDigits: 2,
                   })}
                 </span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-(--gold)/10 flex items-center justify-center border border-(--border) text-(--gold) font-black uppercase shadow-inner">
+                {user?.name?.charAt(0) || ''}
               </div>
             </div>
 
